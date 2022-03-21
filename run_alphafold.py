@@ -126,6 +126,23 @@ RELAX_STIFFNESS = 10.0
 RELAX_EXCLUDE_RESIDUES = []
 RELAX_MAX_OUTER_ITERATIONS = 3
 
+def remove_msa_for_template_aligned_regions(feature_dict):
+    """
+    Remove sequence data when there is template data vailable at that 
+    residue position. 
+    This way, we force AlphaFold to use the structural template data 
+    for the regions that are covered and then use MSA data if the template
+    does not cover that region, to have as much covered residues as possible. 
+    """
+    mask = np.zeros(feature_dict['seq_length'][0], dtype=bool)
+    for templ in feature_dict['template_sequence']:
+        for i,aa in enumerate(templ.decode("utf-8")):
+            if aa != '-':
+                mask[i] = True
+    feature_dict['deletion_matrix_int'][:,mask] = 0
+    feature_dict['msa'][:,mask] = 21
+    return feature_dict
+
 
 def _check_flag(flag_name: str,
                 other_flag_name: str,
@@ -167,6 +184,8 @@ def predict_structure(
         input_fasta_path=fasta_path,
         msa_output_dir=msa_output_dir,
         is_prokaryote=is_prokaryote)
+  # Modify feature dict to remove sequence data for regions that there is template data.
+  feature_dict = emove_msa_for_template_aligned_regions(feature_dict)
   timings['features'] = time.time() - t_0
 
   # Write out features as a pickled dictionary.
