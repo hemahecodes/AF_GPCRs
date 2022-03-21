@@ -1,7 +1,7 @@
 #!/bin/bash
 
-$PDB_LIST="PATH TO PDB LIST"
-$STATE = "actives"
+$PDB_LIST= $1
+$STATE = $2
 
 source /shared/home/hmartin/miniconda3/etc/profile.d/conda.sh
 conda activate /shared/home/hmartin/miniconda3/envs/AlphaFold
