@@ -90,7 +90,7 @@ def make_msa_features(msas: Sequence[parsers.Msa]) -> FeatureDict:
 
 
 def run_msa_tool(msa_runner, input_fasta_path: str, msa_out_path: str,
-                 msa_format: str, use_precomputed_msas: bool,
+                 msa_format: str, use_precomputed_msas: bool, msa_output_dir: str,
                  ) -> Mapping[str, Any]:
   """Runs an MSA tool, checking if output already exists first."""
   if not use_precomputed_msas or not os.path.exists(msa_out_path):
@@ -98,6 +98,7 @@ def run_msa_tool(msa_runner, input_fasta_path: str, msa_out_path: str,
     with open(msa_out_path, 'w') as f:
       f.write(result[msa_format])
   else:
+    msa_out_path = os.path.join(msa_output_dir,'gpcr_msa.sto')
     logging.warning('Reading MSA from file %s', msa_out_path)
     with open(msa_out_path, 'r') as f:
       result = {msa_format: f.read()}
@@ -154,17 +155,20 @@ class DataPipeline:
     input_sequence = input_seqs[0]
     input_description = input_descs[0]
     num_res = len(input_sequence)
+    gpcrs_msa_result = run_msa_tool(
+        self.jackhmmer_uniref90_runner, input_fasta_path, uniref90_out_path,
+        'sto', self.use_precomputed_msas, msa_output_dir)
 
     uniref90_out_path = os.path.join(msa_output_dir, 'uniref90_hits.sto')
     jackhmmer_uniref90_result = run_msa_tool(
         self.jackhmmer_uniref90_runner, input_fasta_path, uniref90_out_path,
-        'sto', self.use_precomputed_msas)
+        'sto', False, msa_output_dir)
     mgnify_out_path = os.path.join(msa_output_dir, 'mgnify_hits.sto')
     jackhmmer_mgnify_result = run_msa_tool(
         self.jackhmmer_mgnify_runner, input_fasta_path, mgnify_out_path, 'sto',
-        self.use_precomputed_msas)
+        False, msa_output_dir)
 
-    msa_for_templates = jackhmmer_uniref90_result['sto']
+    msa_for_templates = gpcrs_msa_result['sto']
     msa_for_templates = parsers.truncate_stockholm_msa(
         msa_for_templates, max_sequences=self.uniref_max_hits)
     msa_for_templates = parsers.deduplicate_stockholm_msa(
@@ -185,7 +189,7 @@ class DataPipeline:
         msa_output_dir, f'pdb_hits.{self.template_searcher.output_format}')
     with open(pdb_hits_out_path, 'w') as f:
       f.write(pdb_templates_result)
-
+    gpcrs_msa = parsers.parse_stockholm(gpcrs_msa_result['sto'])
     uniref90_msa = parsers.parse_stockholm(jackhmmer_uniref90_result['sto'])
     uniref90_msa = uniref90_msa.truncate(max_seqs=self.uniref_max_hits)
     mgnify_msa = parsers.parse_stockholm(jackhmmer_mgnify_result['sto'])
@@ -198,13 +202,13 @@ class DataPipeline:
       bfd_out_path = os.path.join(msa_output_dir, 'small_bfd_hits.sto')
       jackhmmer_small_bfd_result = run_msa_tool(
           self.jackhmmer_small_bfd_runner, input_fasta_path, bfd_out_path,
-          'sto', self.use_precomputed_msas)
+          'sto', False, msa_output_dit)
       bfd_msa = parsers.parse_stockholm(jackhmmer_small_bfd_result['sto'])
     else:
       bfd_out_path = os.path.join(msa_output_dir, 'bfd_uniclust_hits.a3m')
       hhblits_bfd_uniclust_result = run_msa_tool(
           self.hhblits_bfd_uniclust_runner, input_fasta_path, bfd_out_path,
-          'a3m', self.use_precomputed_msas)
+          'a3m', False, msa_output_dir)
       bfd_msa = parsers.parse_a3m(hhblits_bfd_uniclust_result['a3m'])
 
     templates_result = self.template_featurizer.get_templates(
@@ -216,7 +220,7 @@ class DataPipeline:
         description=input_description,
         num_res=num_res)
 
-    msa_features = make_msa_features((uniref90_msa, bfd_msa, mgnify_msa))
+    msa_features = make_msa_features((gpcrs_msa))
 
     logging.info('Uniref90 MSA size: %d sequences.', len(uniref90_msa))
     logging.info('BFD MSA size: %d sequences.', len(bfd_msa))
