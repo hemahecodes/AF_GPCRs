@@ -98,7 +98,7 @@ def run_msa_tool(msa_runner, input_fasta_path: str, msa_out_path: str,
     with open(msa_out_path, 'w') as f:
       f.write(result[msa_format])
   else:
-    msa_out_path = os.path.join(msa_output_dir,'gpcr_msa.sto')
+    #msa_out_path = os.path.join(msa_output_dir,'gpcr_msa.sto')
     logging.warning('Reading MSA from file %s', msa_out_path)
     with open(msa_out_path, 'r') as f:
       result = {msa_format: f.read()}
@@ -156,11 +156,10 @@ class DataPipeline:
     input_description = input_descs[0]
     num_res = len(input_sequence)
     uniref90_out_path = os.path.join(msa_output_dir, 'uniref90_hits.sto')
-    gpcrs_msa_result = run_msa_tool(
-        self.jackhmmer_uniref90_runner, input_fasta_path, uniref90_out_path,
-        'sto', self.use_precomputed_msas, msa_output_dir)
+    #gpcrs_msa_result = run_msa_tool(
+    #    self.jackhmmer_uniref90_runner, input_fasta_path, uniref90_out_path,
+    #    'sto', self.use_precomputed_msas, msa_output_dir)
 
-    uniref90_out_path = os.path.join(msa_output_dir, 'uniref90_hits.sto')
     jackhmmer_uniref90_result = run_msa_tool(
         self.jackhmmer_uniref90_runner, input_fasta_path, uniref90_out_path,
         'sto', self.use_precomputed_msas, msa_output_dir)
@@ -169,7 +168,7 @@ class DataPipeline:
         self.jackhmmer_mgnify_runner, input_fasta_path, mgnify_out_path, 'sto',
         self.use_precomputed_msas, msa_output_dir)
 
-    msa_for_templates = gpcrs_msa_result['sto']
+    #msa_for_templates = gpcrs_msa_result['sto']
     msa_for_templates = parsers.truncate_stockholm_msa(
         msa_for_templates, max_sequences=self.uniref_max_hits)
     msa_for_templates = parsers.deduplicate_stockholm_msa(
@@ -221,7 +220,7 @@ class DataPipeline:
         description=input_description,
         num_res=num_res)
 
-    msa_features = make_msa_features((gpcrs_msa))
+    msa_features = make_msa_features((uniref90_msa, bfd_msa, mgnify_msa))
 
     logging.info('Uniref90 MSA size: %d sequences.', len(uniref90_msa))
     logging.info('BFD MSA size: %d sequences.', len(bfd_msa))
