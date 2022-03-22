@@ -155,6 +155,7 @@ class DataPipeline:
     input_sequence = input_seqs[0]
     input_description = input_descs[0]
     num_res = len(input_sequence)
+    uniref90_out_path = os.path.join(msa_output_dir, 'uniref90_hits.sto')
     gpcrs_msa_result = run_msa_tool(
         self.jackhmmer_uniref90_runner, input_fasta_path, uniref90_out_path,
         'sto', self.use_precomputed_msas, msa_output_dir)
