@@ -168,7 +168,7 @@ class DataPipeline:
         self.jackhmmer_mgnify_runner, input_fasta_path, mgnify_out_path, 'sto',
         self.use_precomputed_msas, msa_output_dir)
 
-    #msa_for_templates = gpcrs_msa_result['sto']
+    msa_for_templates = jackhmmer_uniref90_result['sto']
     msa_for_templates = parsers.truncate_stockholm_msa(
         msa_for_templates, max_sequences=self.uniref_max_hits)
     msa_for_templates = parsers.deduplicate_stockholm_msa(
