@@ -163,11 +163,11 @@ class DataPipeline:
     uniref90_out_path = os.path.join(msa_output_dir, 'uniref90_hits.sto')
     jackhmmer_uniref90_result = run_msa_tool(
         self.jackhmmer_uniref90_runner, input_fasta_path, uniref90_out_path,
-        'sto', False, msa_output_dir)
+        'sto', self.use_precomputed_msas, msa_output_dir)
     mgnify_out_path = os.path.join(msa_output_dir, 'mgnify_hits.sto')
     jackhmmer_mgnify_result = run_msa_tool(
         self.jackhmmer_mgnify_runner, input_fasta_path, mgnify_out_path, 'sto',
-        False, msa_output_dir)
+        self.use_precomputed_msas, msa_output_dir)
 
     msa_for_templates = gpcrs_msa_result['sto']
     msa_for_templates = parsers.truncate_stockholm_msa(
@@ -203,13 +203,13 @@ class DataPipeline:
       bfd_out_path = os.path.join(msa_output_dir, 'small_bfd_hits.sto')
       jackhmmer_small_bfd_result = run_msa_tool(
           self.jackhmmer_small_bfd_runner, input_fasta_path, bfd_out_path,
-          'sto', False, msa_output_dit)
+          'sto', self.use_precomputed_msas, msa_output_dit)
       bfd_msa = parsers.parse_stockholm(jackhmmer_small_bfd_result['sto'])
     else:
       bfd_out_path = os.path.join(msa_output_dir, 'bfd_uniclust_hits.a3m')
       hhblits_bfd_uniclust_result = run_msa_tool(
           self.hhblits_bfd_uniclust_runner, input_fasta_path, bfd_out_path,
-          'a3m', False, msa_output_dir)
+          'a3m', self.use_precomputed_msas, msa_output_dir)
       bfd_msa = parsers.parse_a3m(hhblits_bfd_uniclust_result['a3m'])
 
     templates_result = self.template_featurizer.get_templates(
