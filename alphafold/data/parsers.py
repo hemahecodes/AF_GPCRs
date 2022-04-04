@@ -372,7 +372,8 @@ def _get_hhr_line_regex_groups(
   print(line)
   match = re.match(regex_pattern, line)
   if match is None:
-    raise RuntimeError(f'Could not parse query line {line}')
+    return 0
+    #raise RuntimeError(f'Could not parse query line {line}')
   return match.groups()
 
 
@@ -440,7 +441,8 @@ def _parse_hhr_hit(detailed_lines: Sequence[str]) -> TemplateHit:
       #              start    sequence       end       total_sequence_length
       patt = r'[\t ]*([0-9]*) ([A-Z-]*)[\t ]*([0-9]*) \([0-9]*\)'
       groups = _get_hhr_line_regex_groups(patt, line[17:])
-
+      if groups == 0:
+        continue
       # Get the length of the parsed block using the start and finish indices,
       # and ensure it is the same as the actual block length.
       start = int(groups[0]) - 1  # Make index zero based.
