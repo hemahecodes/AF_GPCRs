@@ -31,8 +31,6 @@ import numpy as np
 
 FeatureDict = MutableMapping[str, np.ndarray]
 TemplateSearcher = Union[hhsearch.HHSearch, hmmsearch.Hmmsearch]
-TemplateSearcher = jackhmmer.Jackhmmer
-
 
 def make_sequence_features(
     sequence: str, description: str, num_res: int) -> FeatureDict:
